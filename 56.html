@@ -65,16 +65,29 @@
         //         var card = (data.message.substring(data.message.length - 2));
         //         $('img[name="S' + playerNo + '"]').attr("src", "cards/" + card + ".svg");
         //     }
-            
+
         //     //$("#trumpSection")[0].innerHTML = "Vili: " + data.villi + data.trump;
         // }
         if (data.playsofar) {
-                showOtherCards(data.playsofar);
-            }
+            showOtherCards(data.playsofar);
+        }
+        showVili();
 
 
     }
+    function showVili() {
+        if (data.VSF) {
+            for (j = data.VSF.length - 1; j > -1; j--) {
+                $('span[name="' + Object.keys(data.VSF[j])[0] + '"]')[0]
+                    .innerHTML = data.VSF[j][Object.keys(data.VSF[j])[0]];
+            }
+        }
+    }
     function passBid() {
+        if (data.VSF.length == 0) {
+            alert("Fist compulsory bid!!!");
+            return;
+        }
         //alert($("#bidSign").val())
         //alert($("#bidValue").val())
         data.AnsNo = data.quNo;
@@ -83,12 +96,29 @@
         $("#bidSection").hide();
     }
     function sendBid() {
+        var bidSign = $("#bidSign").val();
+        var bidValue = $("#bidValue").val();
+
+        if (!validateBid(bidSign, bidValue)) {
+            return;
+        }
         //alert($("#bidSign").val())
         //alert($("#bidValue").val())
         data.AnsNo = data.quNo;
-        data.Answer = $("#bidSign").val() + $("#bidValue").val();
+        data.Answer = bidSign + bidValue;
         webSocket.send(JSON.stringify(data));
         $("#bidSection").hide();
+    }
+    function validateBid(bidSign, bidValue) {
+        if (data.VSF.length > 0) {
+            var lastBid = data.VSF[data.VSF.length - 1];
+            var lastBidValue = Object.values(lastBid)[0].substring(1);
+            if (bidValue <= lastBidValue) {
+                alert("Invalid bid!!");
+                return false;
+            }
+        }
+        return true;
     }
     function getSeatNumber(seatNumber, pos) {
         return (seatNumber + pos === 6) ? 6 : ((seatNumber + pos) % 6)
@@ -96,22 +126,34 @@
     function goToTable(seatNo) {
         seatNumber = parseInt(seatNo, 10);
         $("#activePlayer0")[0].innerHTML = "SeatNo: " + seatNo;
-        $("#playedCardS0").attr("name", "S"+seatNo );
+        $("#playedCardS0").attr("name", "S" + seatNo);
+        $("#viliPlayerS0").attr("name", "S" + seatNo);
+
 
         $("#activePlayer1")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 1);
         $("#playedCardS1").attr("name", "S" + getSeatNumber(seatNumber, 1));
+        $("#viliPlayerS1").attr("name", "S" + getSeatNumber(seatNumber, 1));
+
 
         $("#activePlayer2")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 2);
         $("#playedCardS2").attr("name", "S" + getSeatNumber(seatNumber, 2));
+        $("#viliPlayerS2").attr("name", "S" + getSeatNumber(seatNumber, 2));
+
 
         $("#activePlayer3")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 3);
         $("#playedCardS3").attr("name", "S" + getSeatNumber(seatNumber, 3));
+        $("#viliPlayerS3").attr("name", "S" + getSeatNumber(seatNumber, 3));
+
 
         $("#activePlayer4")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 4);
         $("#playedCardS4").attr("name", "S" + getSeatNumber(seatNumber, 4));
+        $("#viliPlayerS4").attr("name", "S" + getSeatNumber(seatNumber, 4));
+
 
         $("#activePlayer5")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 5);
         $("#playedCardS5").attr("name", "S" + getSeatNumber(seatNumber, 5));
+        $("#viliPlayerS5").attr("name", "S" + getSeatNumber(seatNumber, 5));
+
 
 
         $("#seatSelection").hide();
@@ -157,13 +199,39 @@
     }
     function play() {
         $("#playedActiveCard").attr("src", $(".selectedCard").attr("src"));
-        data.card = $(".selectedCard").attr("name");
+        var selectedCard = $(".selectedCard").attr("name");
+        var validPlay = validatePlay(selectedCard);
+        if (!validPlay) {
+            return;
+        }
+        data.card = selectedCard;
         //alert(data.card);
         webSocket.send(JSON.stringify(data));
 
         $(".selectedCard").remove();
         //$("#playSection").hide();
         $("#playButton").attr("disabled", true);
+    }
+    function validatePlay(card) {
+        if (data.playsofar) {
+            if (data.playsofar.length > 0) {
+                var firstCard = Object.values(data.playsofar[0])[0];
+                if (card.substring(0, 1) != firstCard.substring(0, 1)) {
+                    if (ifSignPresent(firstCard)) {
+                        alert("Invalid play!!")
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    function ifSignPresent(firstCard) {
+        for (var i = 0; i < data.hand.length; i++) {
+            if (data.hand[i].substring(0, 1) == firstCard.substring(0, 1)) {
+                return true;
+            }
+        }
     }
     function resetPlayedCards() {
         for (i = 0; i < 6; i++) {
@@ -178,8 +246,10 @@
 
         for (i = otherCards.length - 1; i > -1; i--) {
             //$("#playedCard" + Object.keys(otherCards[i])[0]).attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
-            $('img[name="' + Object.keys(otherCards[i])[0] + '"]').attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
+            $('img[name="' + Object.keys(otherCards[i])[0] + '"]')
+                .attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
         }
+
     }
 </script>
 
@@ -197,61 +267,102 @@
 
 
     <div id="playingTable" style="display: none;">
-        <div class="row" style="height: 108px;">
-            <div class="col-sm">
-                <img id='playedCardS4' class="card" src='cards/RED_BACK.svg' onclick="">
-                <span id="activePlayer4"></span>
+        <div class="row" style="height: 50px;">
+            <div class="col-sm-4">
+                <div class="row">
+                    <span id="activePlayer4"></span>
+                </div>
+                <div class="row">
+                    <span id="viliPlayerS4"></span>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="row">
+                    <span id="activePlayer3"></span>
+                </div>
+                <div class="row">
+                    <span id="viliPlayerS3"></span>
+                </div>
 
             </div>
-            <div class="col-sm">
-                <img id='playedCardS3' class="card" src='cards/RED_BACK.svg' onclick="">
-                <span id="activePlayer3"></span>
+            <div class="col-sm-4">
+                <div class="row">
+                    <span id="activePlayer2"></span>
+                </div>
+                <div class="row">
+                    <span id="viliPlayerS2"></span>
+                </div>
             </div>
-            <div class="col-sm">
-                <img id='playedCardS2' class="card" src='cards/RED_BACK.svg' onclick="">
-                <span id="activePlayer2"></span>
+        </div>
+        <div class="row" style="height: 138px;">
+            <div class="col-sm-4">
+                <img id='playedCardS4' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid black">
+
+            </div>
+            <div class="col-sm-4">
+
+                <div class="row">
+                    <img id='playedCardS3' class="card" src='cards/RED_BACK.svg' onclick=""
+                        style="border:5px solid red">
+                </div>
+            </div>
+            <div class="col-sm-4">
+
+                <img id='playedCardS2' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid black">
             </div>
         </div>
         <div class="row">
-            <div class="col-sm">
+            <div class="col-sm-4">
 
             </div>
-            <div class="col-sm">
+            <div class="col-sm-4">
                 Fold </div>
-            <div class="col-sm">
+            <div class="col-sm-4">
 
             </div>
         </div>
-        <div class="row" style="height: 108px;">
-            <div class="col-sm">
-                <img id='playedCardS5' class="card" src='cards/RED_BACK.svg' onclick="">
-                <span id="activePlayer5"></span>
+        <div class="row" style="height: 138px;">
+            <div class="col-sm-4">
+                <!-- <span id="viliPlayerS5"></span> -->
+                <!-- <span id="activePlayer5"></span> -->
+
+                <img id='playedCardS5' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid red">
 
             </div>
-            <div class="col-sm">
-                <img id='playedCardS0' class="card" src='cards/RED_BACK.svg' onclick="">
+            <div class="col-sm-4">
+                <img id='playedCardS0' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid black">
             </div>
-            <div class="col-sm">
-                <img id='playedCardS1' class="card" src='cards/RED_BACK.svg' onclick="">
-                <span id="activePlayer1"></span> </div>
+            <div class="col-sm-4">
+                <!-- <div class="row">
+                    <span id="viliPlayerS1"></span>
+                </div> -->
+                <img id='playedCardS1' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid red">
+                <!-- <span id="activePlayer1"></span> -->
+            </div>
         </div>
         <div class="row">
-            <div class="col-sm-2" id="trumpSection">
-                One of three columns
+            <div class="col-sm-1" >
+                <div class="row">
+                    <span id="activePlayer5"></span>
+                </div>
+                <div class="row">
+                    <span id="viliPlayerS5"></span>
+                </div>
 
             </div>
-            <div class="col-sm-8">
+            <div class="col-sm-7" style="border-style: solid;">
                 <div class="row">
                     <span id="activePlayer0"></span>
+                    <span id="viliPlayerS0"></span>
                 </div>
                 <div class="row text-center">
                     <div class="btn-group" id="bidSection" style="display: none;">
                         <!-- <div id="bidSection"> -->
-                        <select class="browser-default custom-select" id="bidSign">
-                            <option value="S" selected> Spade</option>
-                            <option value="C">Club</option>
-                            <option value="D">Diamond</option>
-                            <option value="H">Heart</option>
+                        <select class="browser-default custom-select selectpicker" id="bidSign">
+                            <option value="S" selected> ♠ Spade</option>
+                            <option value="C">♣ Club</option>
+                            <option value="D">♦ Diamond</option>
+                            <option value="H">♥ Heart</option>
 
                         </select>
 
@@ -269,8 +380,8 @@
 
                     <div class="col text-center">
                         <div class="text-center" id="playSection">
-                            <button type="button" class="btn btn-primary text-center" id="playButton"
-                                onclick="play()" disabled="true">Play</button>
+                            <button type="button" class="btn btn-primary text-center" id="playButton" onclick="play()"
+                                disabled="true">Play</button>
                         </div>
                     </div>
                 </div>
@@ -287,7 +398,12 @@
                 </div>
             </div>
             <div class="col-sm-2">
-                One of three columns
+                <div class="row">
+                    <span id="activePlayer1"></span>
+                </div>
+                <div class="row">
+                    <span id="viliPlayerS1"></span>
+                </div>
             </div>
         </div>
     </div>
