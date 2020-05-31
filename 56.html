@@ -14,12 +14,15 @@
 <script src="cards.js" type="text/javascript"></script>
 
 <script charset="utf-8" lang="Javascript">
+    var seatNumber;
     var webSocket;
     var hand;
     var uuid = createUUID();
     var data;
     console.log(uuid);
-    document.cookie = "key=" + uuid + ";max-age=2592000;"
+    if (!document.cookie) {
+        document.cookie = "key=" + uuid + ";max-age=2592000;"
+    }
     function createUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -27,22 +30,48 @@
         });
     }
     function refreshHand(data) {
+        var cardsContent = "";
+        //$("#activeHand")[0].innerHTML="";
         if (data.hand) {
             $.each(data.hand, function (index, value) {
                 //alert(index + ": " + value);
-                $("#card" + (index + 1)).attr("src", "cards/" + value + ".svg");
-                $("#card" + (index + 1)).attr("name", value);
+                cardsContent += "<img id='card1' class='card' src='cards/" + value + ".svg' name=" + value + " onclick=selectCard(this)>";
+                //$("#card" + (index + 1)).attr("src", "cards/" + value + ".svg");
+                //$("#card" + (index + 1)).attr("name", value);
+
+
             });
-
         }
+        if (cardsContent) {
+            $("#activeHand")[0].innerHTML = cardsContent;
+        }
+
         if (data.question) {
+            resetPlayedCards();
             $("#bidSection").show();
-            //data.AnsNo = data.quNo;
-            //data.Answer = $("#bidSign")+ 
-            //var answer = "{\"AnsNo\": 3, \"Answer\": \"P\", \"usr\": \"P___bot3\", \"t\": \"Team0\"}";
-            //webSocket.send(JSON.stringify(data));
-
+            //$("#playSection").hide();
+            $("#playButton").attr("disabled", true);
         }
+        if (data.villi) {
+            $("#trumpSection")[0].innerHTML = "Vili: " + data.villi + data.trump;
+        }
+
+        // if (data.message) {
+        //     if (data.message.includes("P___bot")) {
+        //         if (data.playsofar.length == 1) {
+        //             resetPlayedCards();
+        //         }
+        //         var playerNo = (data.message.substring(7, 8));
+        //         var card = (data.message.substring(data.message.length - 2));
+        //         $('img[name="S' + playerNo + '"]').attr("src", "cards/" + card + ".svg");
+        //     }
+            
+        //     //$("#trumpSection")[0].innerHTML = "Vili: " + data.villi + data.trump;
+        // }
+        if (data.playsofar) {
+                showOtherCards(data.playsofar);
+            }
+
 
     }
     function passBid() {
@@ -61,9 +90,33 @@
         webSocket.send(JSON.stringify(data));
         $("#bidSection").hide();
     }
-    function goToTable() {
+    function getSeatNumber(seatNumber, pos) {
+        return (seatNumber + pos === 6) ? 6 : ((seatNumber + pos) % 6)
+    };
+    function goToTable(seatNo) {
+        seatNumber = parseInt(seatNo, 10);
+        $("#activePlayer0")[0].innerHTML = "SeatNo: " + seatNo;
+        $("#playedCardS0").attr("name", "S"+seatNo );
+
+        $("#activePlayer1")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 1);
+        $("#playedCardS1").attr("name", "S" + getSeatNumber(seatNumber, 1));
+
+        $("#activePlayer2")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 2);
+        $("#playedCardS2").attr("name", "S" + getSeatNumber(seatNumber, 2));
+
+        $("#activePlayer3")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 3);
+        $("#playedCardS3").attr("name", "S" + getSeatNumber(seatNumber, 3));
+
+        $("#activePlayer4")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 4);
+        $("#playedCardS4").attr("name", "S" + getSeatNumber(seatNumber, 4));
+
+        $("#activePlayer5")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 5);
+        $("#playedCardS5").attr("name", "S" + getSeatNumber(seatNumber, 5));
+
+
         $("#seatSelection").hide();
-        webSocket = new WebSocket("ws://127.0.0.1:6789/" + document.cookie + "&Room=0");
+        document.cookie = seatNo;
+        webSocket = new WebSocket("ws://127.0.0.1:6789/key=" + seatNo + "&Room=0&seatNo=" + seatNo);
         webSocket.onmessage = function (message) {
             //console.log("here ");
             console.log(message);
@@ -73,7 +126,10 @@
                 refreshHand(data);
 
                 if (data.event == 'play') {
-                    $("#playSection").show();
+                    //$("#playSection").show();
+                    $("#playButton").attr("disabled", false);
+                    showOtherCards(data.playsofar);
+
                 }
             }
 
@@ -107,20 +163,35 @@
 
         $(".selectedCard").remove();
         //$("#playSection").hide();
+        $("#playButton").attr("disabled", true);
+    }
+    function resetPlayedCards() {
+        for (i = 0; i < 6; i++) {
+            //seatIndex--;
+            $("#playedCardS" + i).attr("src", "cards/RED_BACK.svg");
+        }
+        //$("#playedActiveCard").attr("src", "cards/RED_BACK.svg");
+    }
 
+    function showOtherCards(otherCards) {
+        resetPlayedCards();
 
+        for (i = otherCards.length - 1; i > -1; i--) {
+            //$("#playedCard" + Object.keys(otherCards[i])[0]).attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
+            $('img[name="' + Object.keys(otherCards[i])[0] + '"]').attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
+        }
     }
 </script>
 
 <div class="container">
 
     <div class="container1" id="seatSelection">
-        <button type="button" class="btn btn-primary" id="button1" onclick="goToTable()">1</button>
-        <button type="button" class="btn btn-primary" onclick="goToTable()">2</button>
-        <button type="button" class="btn btn-primary" onclick="goToTable()">3</button>
-        <button type="button" class="btn btn-primary" onclick="goToTable()">4</button>
-        <button type="button" class="btn btn-primary" onclick="goToTable()">5</button>
-        <button type="button" class="btn btn-primary" onclick="goToTable()">6</button>
+        <button type="button" class="btn btn-primary" id="button1" onclick="goToTable(1)">1</button>
+        <button type="button" class="btn btn-primary" onclick="goToTable(2)">2</button>
+        <button type="button" class="btn btn-primary" onclick="goToTable(3)">3</button>
+        <button type="button" class="btn btn-primary" onclick="goToTable(4)">4</button>
+        <button type="button" class="btn btn-primary" onclick="goToTable(5)">5</button>
+        <button type="button" class="btn btn-primary" onclick="goToTable(6)">6</button>
     </div>
 
 
@@ -128,15 +199,17 @@
     <div id="playingTable" style="display: none;">
         <div class="row" style="height: 108px;">
             <div class="col-sm">
-                <img id='playedCard2' class="card" src='cards/RED_BACK.svg' onclick="">
-                2
+                <img id='playedCardS4' class="card" src='cards/RED_BACK.svg' onclick="">
+                <span id="activePlayer4"></span>
+
             </div>
             <div class="col-sm">
-                <img id='playedCard1' class="card" src='cards/RED_BACK.svg' onclick="">
-                1 </div>
+                <img id='playedCardS3' class="card" src='cards/RED_BACK.svg' onclick="">
+                <span id="activePlayer3"></span>
+            </div>
             <div class="col-sm">
-                <img id='playedCard6' class="card" src='cards/RED_BACK.svg' onclick="">
-                6
+                <img id='playedCardS2' class="card" src='cards/RED_BACK.svg' onclick="">
+                <span id="activePlayer2"></span>
             </div>
         </div>
         <div class="row">
@@ -151,48 +224,58 @@
         </div>
         <div class="row" style="height: 108px;">
             <div class="col-sm">
-                <img id='playedCard3' class="card" src='cards/RED_BACK.svg' onclick="">
-                
+                <img id='playedCardS5' class="card" src='cards/RED_BACK.svg' onclick="">
+                <span id="activePlayer5"></span>
+
             </div>
             <div class="col-sm">
-                <img id='playedActiveCard' class="card" src='cards/RED_BACK.svg' onclick="">
+                <img id='playedCardS0' class="card" src='cards/RED_BACK.svg' onclick="">
             </div>
             <div class="col-sm">
-                <img id='playedCard5' class="card" src='cards/RED_BACK.svg' onclick="">
-                1 </div>
+                <img id='playedCardS1' class="card" src='cards/RED_BACK.svg' onclick="">
+                <span id="activePlayer1"></span> </div>
         </div>
         <div class="row">
-            <div class="col-sm-2">
+            <div class="col-sm-2" id="trumpSection">
                 One of three columns
 
             </div>
             <div class="col-sm-8">
-                6
-                <div class="btn-group" id="bidSection" style="display: none;">
-                    <select class="browser-default custom-select" id="bidSign">
-                        <option value="S" selected> Spade</option>
-                        <option value="C">Club</option>
-                        <option value="D">Diamond</option>
-                        <option value="H">Heart</option>
+                <div class="row">
+                    <span id="activePlayer0"></span>
+                </div>
+                <div class="row text-center">
+                    <div class="btn-group" id="bidSection" style="display: none;">
+                        <!-- <div id="bidSection"> -->
+                        <select class="browser-default custom-select" id="bidSign">
+                            <option value="S" selected> Spade</option>
+                            <option value="C">Club</option>
+                            <option value="D">Diamond</option>
+                            <option value="H">Heart</option>
 
-                    </select>
+                        </select>
 
-                    <select class="browser-default custom-select" id="bidValue">
+                        <select class="browser-default custom-select" id="bidValue">
 
-                    </select>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary" id="button1" onclick="sendBid()">Bid</button>
-                        <button type="button" class="btn btn-primary" id="button1" onclick="passBid()">Pass</button>
+                        </select>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary" id="button1" onclick="sendBid()">Bid</button>
+                            <button type="button" class="btn btn-primary" id="button1" onclick="passBid()">Pass</button>
+                        </div>
+                        <!-- </div> -->
+                    </div>
+
+
+
+                    <div class="col text-center">
+                        <div class="text-center" id="playSection">
+                            <button type="button" class="btn btn-primary text-center" id="playButton"
+                                onclick="play()" disabled="true">Play</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="btn-group" id="playSection" style="display: none;">
-
-                        <button type="button" class="btn btn-primary" id="button1" onclick="play()">Play</button>
-                
-                </div>
-
-                <div class="hand hhand active-hand">
+                <div class="hand hhand active-hand" id="activeHand">
                     <img id='card1' class="card" src='cards/SA.svg' onclick=selectCard(this)>
                     <img id='card2' class="card" src='cards/SK.svg' onclick=selectCard(this)>
                     <img id='card3' class="card" src='cards/SK.svg' onclick=selectCard(this)>
