@@ -81,6 +81,7 @@
                 $('span[name="' + Object.keys(data.VSF[j])[0] + '"]')[0]
                     .innerHTML = data.VSF[j][Object.keys(data.VSF[j])[0]];
             }
+
         }
     }
     function passBid() {
@@ -128,31 +129,43 @@
         $("#activePlayer0")[0].innerHTML = "SeatNo: " + seatNo;
         $("#playedCardS0").attr("name", "S" + seatNo);
         $("#viliPlayerS0").attr("name", "S" + seatNo);
+        $("#spinnerS0").attr("name", "S" + seatNo);
+
 
 
         $("#activePlayer1")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 1);
         $("#playedCardS1").attr("name", "S" + getSeatNumber(seatNumber, 1));
         $("#viliPlayerS1").attr("name", "S" + getSeatNumber(seatNumber, 1));
+        $("#spinnerS1").attr("name", "S" + getSeatNumber(seatNumber, 1));
+
 
 
         $("#activePlayer2")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 2);
         $("#playedCardS2").attr("name", "S" + getSeatNumber(seatNumber, 2));
         $("#viliPlayerS2").attr("name", "S" + getSeatNumber(seatNumber, 2));
+        $("#spinnerS2").attr("name", "S" + getSeatNumber(seatNumber, 2));
+
 
 
         $("#activePlayer3")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 3);
         $("#playedCardS3").attr("name", "S" + getSeatNumber(seatNumber, 3));
         $("#viliPlayerS3").attr("name", "S" + getSeatNumber(seatNumber, 3));
+        $("#spinnerS3").attr("name", "S" + getSeatNumber(seatNumber, 3));
+
 
 
         $("#activePlayer4")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 4);
         $("#playedCardS4").attr("name", "S" + getSeatNumber(seatNumber, 4));
         $("#viliPlayerS4").attr("name", "S" + getSeatNumber(seatNumber, 4));
+        $("#spinnerS4").attr("name", "S" + getSeatNumber(seatNumber, 4));
+
 
 
         $("#activePlayer5")[0].innerHTML = "SeatNo: " + getSeatNumber(seatNumber, 5);
         $("#playedCardS5").attr("name", "S" + getSeatNumber(seatNumber, 5));
         $("#viliPlayerS5").attr("name", "S" + getSeatNumber(seatNumber, 5));
+        $("#spinnerS5").attr("name", "S" + getSeatNumber(seatNumber, 5));
+
 
 
 
@@ -250,6 +263,15 @@
                 .attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
         }
 
+        for (var i = 0; i < 6; i++) {
+            $('div[name="S' + i + '"]').hide();
+        }
+        if(otherCards.length>0){
+        var lastPlayed = Object.keys(otherCards[otherCards.length - 1])[0];
+        var nextPlay = "S" + (parseInt(lastPlayed.substring(1), 10) + 1) % 6;
+        $('div[name="' + nextPlay + '"]').show();
+        }
+
     }
 </script>
 
@@ -267,93 +289,216 @@
 
 
     <div id="playingTable" style="display: none;">
-        <div class="row" style="height: 50px;">
-            <div class="col-sm-4">
-                <div class="row">
-                    <span id="activePlayer4"></span>
-                </div>
-                <div class="row">
-                    <span id="viliPlayerS4"></span>
-                </div>
+
+        <div class="row" style="height: 100px;">
+            <div class="col-sm-2">
+
             </div>
-            <div class="col-sm-4">
-                <div class="row">
+            <div class="col-sm-3">
+
+            </div>
+            <div class="col-sm-2">
+                <div class="row card-header card">
                     <span id="activePlayer3"></span>
                 </div>
-                <div class="row">
-                    <span id="viliPlayerS3"></span>
+                <div class="row ">
+                    <div class="col-7 card-header card">
+                        <span id="viliPlayerS3"></span>
+                    </div>
+
+                    <div class="col-5 card-header card">
+                        <div class="spinner-grow" id="spinnerS3" style="width: 1.3rem; height: 1.3rem; display: none;"
+                            role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
                 </div>
 
             </div>
-            <div class="col-sm-4">
-                <div class="row">
-                    <span id="activePlayer2"></span>
-                </div>
-                <div class="row">
-                    <span id="viliPlayerS2"></span>
-                </div>
+            <div class="col-sm-3">
+                <!---->
+            </div>
+            <div class="col-sm-2">
+                <!---->
             </div>
         </div>
         <div class="row" style="height: 138px;">
-            <div class="col-sm-4">
-                <img id='playedCardS4' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid black">
-
+            <div class="col-sm-2">
+                <!---->
             </div>
-            <div class="col-sm-4">
-
+            <div class="col-sm-3">
+                <div class="row" style="height: 20px;">
+                </div>
                 <div class="row">
-                    <img id='playedCardS3' class="card" src='cards/RED_BACK.svg' onclick=""
-                        style="border:5px solid red">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col card-header card">
+                                <span id="activePlayer4"></span>
+                            </div>
+                        </div>
+                        <div class="row ">
+                            <div class="col-7 card-header card">
+                                <span id="viliPlayerS4"></span>
+                            </div>
+                            <div class="col-5 card-header card">
+                                <div id="spinnerS4" class="spinner-grow"
+                                    style="width: 1.3rem; height: 1.3rem;; display: none;" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div class="col">
+                        <img id='playedCardS4' class="card" src='cards/RED_BACK.svg' onclick=""
+                            style="border:5px solid black">
+                    </div>
                 </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-2">
+                <img id='playedCardS3' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid red">
 
-                <img id='playedCardS2' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid black">
+            </div>
+            <div class="col-sm-3">
+                <div class="row" style="height: 20px;">
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <img id='playedCardS2' class="card" src='cards/RED_BACK.svg' onclick=""
+                            style="border:5px solid black">
+                    </div>
+                    <div class="col ">
+                        <div class="row ">
+                            <div class="col card-header card">
+                                <span id="activePlayer2"></span>
+                            </div>
+                        </div>
+                        <div class="row ">
+                            <div class="col-7 card-header card">
+                                <span id="viliPlayerS2"></span>
+                            </div>
+                            <div class="col-5 card-header card">
+                                <div id="spinnerS2" class="spinner-grow"
+                                    style="width: 1.3rem; height: 1.3rem; ; display: none;" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <!---->
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm-4">
+        <div class="row" style="height: 10px;">
+            <div class="col-sm-2">
+                <!---->
+            </div>
+            <div class="col-sm-3">
 
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-2">
                 Fold </div>
-            <div class="col-sm-4">
+            <div class="col-sm-3">
 
+            </div>
+            <div class="col-sm-2">
+                <!---->
             </div>
         </div>
         <div class="row" style="height: 138px;">
-            <div class="col-sm-4">
-                <!-- <span id="viliPlayerS5"></span> -->
-                <!-- <span id="activePlayer5"></span> -->
+            <div class="col-sm-2">
+                <div class="row card">
+                    <div class="card-header">
+                        Details
+                    </div>
+                    <div class="card-header">
+                        <span class="card-text" id="trumpSection"></span>
+                    </div>
+                </div>
+            </div>
 
-                <img id='playedCardS5' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid red">
+            <div class="col-sm-3">
+                <div class="row">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col card-header card">
+                                <span id="activePlayer5"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-7 card-header card">
+                                <span id="viliPlayerS5"></span>
+                            </div>
+                            <div class="col-5 card-header card">
+                                <div id="spinnerS5" class="spinner-grow"
+                                    style="width: 1.3rem; height: 1.3rem; ; display: none;" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <img id='playedCardS5' class="card" src='cards/RED_BACK.svg' onclick=""
+                            style="border:5px solid red">
+                    </div>
+                </div>
 
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-2">
+                <div class="row" style="height: 20px;">
+                </div>
                 <img id='playedCardS0' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid black">
             </div>
-            <div class="col-sm-4">
-                <!-- <div class="row">
-                    <span id="viliPlayerS1"></span>
-                </div> -->
-                <img id='playedCardS1' class="card" src='cards/RED_BACK.svg' onclick="" style="border:5px solid red">
-                <!-- <span id="activePlayer1"></span> -->
+            <div class="col-sm-3">
+                <div class="row ">
+                    <div class="col">
+                        <img id='playedCardS1' class="card" src='cards/RED_BACK.svg' onclick=""
+                            style="border:5px solid red">
+                    </div>
+                    <div class="col ">
+                        <div class="row">
+                            <div class="col card-header card">
+                                <span id="activePlayer1"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-7 card-header card">
+                                <span id="viliPlayerS1"></span>
+                            </div>
+                            <div class="col-5 card-header card">
+                                <div id="spinnerS1" class="spinner-grow"
+                                    style="width: 1.3rem; height: 1.3rem; ; display: none;" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <!---->
+                </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-1" >
-                <div class="row">
-                    <span id="activePlayer5"></span>
-                </div>
-                <div class="row">
-                    <span id="viliPlayerS5"></span>
-                </div>
+            <div class="col-sm-3">
+
 
             </div>
-            <div class="col-sm-7" style="border-style: solid;">
+            <div class="col-sm-7">
                 <div class="row">
-                    <span id="activePlayer0"></span>
-                    <span id="viliPlayerS0"></span>
+                    <div class="col-1 card-header card">
+                        <div id="spinnerS0" class="spinner-grow" style="width: 1.3rem; height: 1.3rem; ; display: none;"
+                            role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                    <span id="activePlayer0" class="card-header card"></span>
+                    <span id="viliPlayerS0" class="card-header card"></span>
+
                 </div>
                 <div class="row text-center">
                     <div class="btn-group" id="bidSection" style="display: none;">
@@ -398,12 +543,7 @@
                 </div>
             </div>
             <div class="col-sm-2">
-                <div class="row">
-                    <span id="activePlayer1"></span>
-                </div>
-                <div class="row">
-                    <span id="viliPlayerS1"></span>
-                </div>
+
             </div>
         </div>
     </div>
