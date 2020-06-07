@@ -1,5 +1,6 @@
+@media only screen and (min-width: 768px) {
 img.card {
-	width: 70px;
+	width: 60px;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -7,6 +8,19 @@ img.card {
 	box-sizing: initial;
 	display: inline;
 }
+}
+
+@media only screen and (max-width: 768px) {
+	img.card {
+		width: 50px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		vertical-align: initial;
+		box-sizing: initial;
+		display: inline;
+	}
+	}
 
 /*
  * A hand is a div containing cards.
