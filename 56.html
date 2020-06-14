@@ -1,4 +1,3 @@
-
 <meta charset="UTF-8">
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
@@ -35,7 +34,6 @@
     }
     function refreshHand(data) {
         var cardsContent = "";
-        //$("#activeHand")[0].innerHTML="";
         if (data.hand) {
             $.each(data.hand, function (index, value) {
                 //alert(index + ": " + value);
@@ -57,41 +55,71 @@
             $("#playButton").attr("disabled", true);
         }
         if (data.villi) {
-            $("#trumpSection")[0].innerHTML = "Vili: " + data.villi + data.trump;
+            $("#trumpSection")[0].innerHTML = "Vili: " + data.villi + convertToSign(data.trump);
         }
 
-        // if (data.message) {
-        //     if (data.message.includes("P___bot")) {
-        //         if (data.playsofar.length == 1) {
-        //             resetPlayedCards();
-        //         }
-        //         var playerNo = (data.message.substring(7, 8));
-        //         var card = (data.message.substring(data.message.length - 2));
-        //         $('img[name="S' + playerNo + '"]').attr("src", "cards/" + card + ".svg");
-        //     }
-
-        //     //$("#trumpSection")[0].innerHTML = "Vili: " + data.villi + data.trump;
-        // }
         if (data.playsofar && data.playsofar.length != 0) {
             showOtherCards(data.playsofar);
         }
-        showVili();
+        if (data.VSF) {
+            showVili(data.VSF);
+        }
 
 
     }
-    function showVili() {
-        if (data.VSF) {
-            for (j = data.VSF.length - 1; j > -1; j--) {
-                $('span[name="' + Object.keys(data.VSF[j])[0] + '"]')[0]
-                    .innerHTML = data.VSF[j][Object.keys(data.VSF[j])[0]];
+    function showVili(VSF) {
+        if (VSF) {
+            resetVSF();
+            for (j = VSF.length - 1; j > -1; j--) {
+                let seatNo = Object.keys(VSF[j])[0];
+                var vili = VSF[j][seatNo];
+                let viliToShow;
+
+                if (vili == 'P') {
+                    viliToShow = 'P';
+                }
+                else {
+                    viliToShow = convertToSign(vili.substring(0, 1)) + vili.substring(1);
+                }
+                // viliToShow = convertToSign(vili.substring(0, 1)) + vili.substring(1);
+                $('span[name="' + seatNo + '"]')[0]
+                    .innerHTML = $('span[name="' + seatNo + '"]')[0]
+                        .innerHTML + ' ' + '<span class =\"card-text badge badge-danger\">' + viliToShow + '</span>';
             }
 
+        }
+    }
+    function resetVSF() {
+        $('span[name="S1"]')[0].innerHTML = '';
+        $('span[name="S2"]')[0].innerHTML = '';
+        $('span[name="S3"]')[0].innerHTML = '';
+        $('span[name="S4"]')[0].innerHTML = '';
+        $('span[name="S5"]')[0].innerHTML = '';
+        $('span[name="S6"]')[0].innerHTML = '';
+
+    }
+    function convertToSign(signChar) {
+        if (signChar == 'S') {
+            return '♠';
+        } else if (signChar == 'D') {
+            return '♦';
+        } else if (signChar == 'C') {
+            return '♣';
+        } else if (signChar == 'H') {
+            return '♥';
         }
     }
     function passBid() {
         if (data.VSF.length == 0) {
             alert("Fist compulsory bid!!!");
             return;
+        }
+        if (data.VSF.length == 1) {
+            let bidValue = Object.values(data.VSF[0])[0].substring(1);
+            if (bidValue == '') {
+                alert("Fist compulsory bid!!!");
+                return;
+            }
         }
         //alert($("#bidSign").val())
         //alert($("#bidValue").val())
@@ -116,8 +144,14 @@
     }
     function validateBid(bidSign, bidValue) {
         if (data.VSF.length > 0) {
-            var lastBid = data.VSF[data.VSF.length - 1];
-            var lastBidValue = Object.values(lastBid)[0].substring(1);
+            let vsfLength = data.VSF.length;
+            let lastBidValue = '';
+            while (lastBidValue == '' && vsfLength > 0) {
+                let lastBid = data.VSF[vsfLength - 1];
+                lastBidValue = Object.values(lastBid)[0].substring(1);
+                vsfLength--;
+            }
+
             if (bidValue <= lastBidValue) {
                 alert("Invalid bid!!");
                 return false;
@@ -182,7 +216,6 @@
             console.log(message);
             if (message.data) {
                 $('div[id="foldSection"]').hide();
-                //console.log(message.data);
                 data = JSON.parse(message.data);
                 refreshHand(data);
 
@@ -190,14 +223,15 @@
                     if (data.playsofar && data.playsofar.length == 0) {
                         $('div[id="foldSection"]').show();
                     }
-                    //$("#playSection").show();
                     $("#playButton").attr("disabled", false);
-                    //showOtherCards(data.playsofar);
 
                 }
                 if (data.event == 'MatchIsDone') {
                     $("#team0")[0].innerHTML = data.base0;
                     $("#team1")[0].innerHTML = data.base1;
+                }
+                if (data.event == 'HeGotPidi') {
+                    $('div[name="' + data.message + '"]').show();
                 }
             }
 
@@ -272,7 +306,6 @@
         resetPlayedCards();
 
         for (i = otherCards.length - 1; i > -1; i--) {
-            //$("#playedCard" + Object.keys(otherCards[i])[0]).attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
             $('img[name="' + Object.keys(otherCards[i])[0] + '"]')
                 .attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
         }
@@ -281,7 +314,7 @@
         for (var i = 0; i < 6; i++) {
             $('div[name="S' + i + '"]').hide();
         }
-        if (otherCards.length > 0) {
+        if (otherCards.length > 0 && otherCards.length !=6) {
             var lastPlayed = Object.keys(otherCards[otherCards.length - 1])[0];
             var nextPlay = "S" + (parseInt(lastPlayed.substring(1), 10) + 1) % 6;
             $('div[name="' + nextPlay + '"]').show();
@@ -462,12 +495,13 @@
                     <div class="col-sm-2">
                         <div class="row">
                             <div class="">
-                                
+
                             </div>
                         </div>
                         <div class="row">
                             <div class="">
-                                <span class="card-text badge badge-warning" id="trumpSection"></span>
+                                <span class="card-text badge badge-warning" style="font-size: 100%;"
+                                    id="trumpSection"></span>
                             </div>
                         </div>
                     </div>
@@ -598,14 +632,14 @@
                         </div>
 
                         <div class="hand hhand active-hand" id="activeHand">
-                            <img id='card1' class="card" src='cards/SA.svg' onclick=selectCard(this)>
-                            <img id='card2' class="card" src='cards/SK.svg' onclick=selectCard(this)>
-                            <img id='card3' class="card" src='cards/SK.svg' onclick=selectCard(this)>
-                            <img id='card4' class="card" src='cards/SK.svg' onclick=selectCard(this)>
-                            <img id='card5' class="card" src='cards/SK.svg' onclick=selectCard(this)>
-                            <img id='card6' class="card" src='cards/SK.svg' onclick=selectCard(this)>
-                            <img id='card7' class="card" src='cards/SK.svg' onclick=selectCard(this)>
-                            <img id='card8' class="card" src='cards/SK.svg' onclick=selectCard(this)>
+                            <img id='card1' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card2' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card3' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card4' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card5' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card6' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card7' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
+                            <img id='card8' class="card" src='cards/BLUE_BACK.svg' onclick=selectCard(this)>
                         </div>
                     </div>
                     <div class="col-sm col-lg">
