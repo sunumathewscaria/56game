@@ -21,9 +21,7 @@
     var webSocket;
     var hand;
     var uuid = createUUID();
-    var globalData = {};
-    var questionData = {};
-    var playData = {};
+    var data;
     console.log(uuid);
     if (!document.cookie) {
         document.cookie = "key=" + uuid + ";max-age=2592000;"
@@ -38,15 +36,21 @@
         var cardsContent = "";
         if (data.hand) {
             $.each(data.hand, function (index, value) {
+                //alert(index + ": " + value);
                 cardsContent += "<img id='card1' class='card' src='cards/" + value + ".svg' name=" + value + " onclick=selectCard(this)>";
+                //$("#card" + (index + 1)).attr("src", "cards/" + value + ".svg");
+                //$("#card" + (index + 1)).attr("name", value);
+
+
             });
         }
         if (cardsContent) {
             $("#activeHand")[0].innerHTML = cardsContent;
         }
 
+
         if (data.villi) {
-            $("#trumpSection")[0].innerHTML = "Villi: " + data.dudeTeam + " " + data.villi + convertToSign(data.trump);
+            $("#trumpSection")[0].innerHTML = "Villi: "+data.dudeTeam+" "+data.villi + convertToSign(data.trump);
         }
 
         if (data.playsofar && data.playsofar.length != 0) {
@@ -67,19 +71,10 @@
                 let viliToShow;
 
                 if (vili == 'P') {
-                    viliToShow = 'Pass';
+                    viliToShow = 'P';
                 }
                 else {
                     viliToShow = convertToSign(vili.substring(0, 1)) + vili.substring(1);
-                }
-                if (j == VSF.length - 1) {
-                    $("#trumpSection")[0].innerHTML = "Vili: " + viliToShow;
-                    //spinner
-                    resetSpinner();
-                    let seatNumberIndex = parseInt(seatNo.substring(1));
-
-                    $('div[name="S' + getSeatNumber(seatNumberIndex, 1) + '"]').show();
-
                 }
                 // viliToShow = convertToSign(vili.substring(0, 1)) + vili.substring(1);
                 $('span[name="' + seatNo + '"]')[0]
@@ -87,12 +82,6 @@
                         .innerHTML + ' ' + '<span class =\"card-text badge badge-danger\">' + viliToShow + '</span>';
             }
 
-        }
-    }
-    function resetSpinner() {
-        //spinner
-        for (var i = 1; i < 7; i++) {
-            $('div[name="S' + i + '"]').hide();
         }
     }
     function resetVSF() {
@@ -116,45 +105,41 @@
         }
     }
     function passBid() {
-        if (globalData.VSF.length == 0) {
+        if (data.VSF.length == 0) {
             alert("Fist compulsory bid!!!");
             return;
         }
-        if (globalData.VSF.length == 1) {
-            let bidValue = Object.values(globalData.VSF[0])[0].substring(1);
+        if (data.VSF.length == 1) {
+            let bidValue = Object.values(data.VSF[0])[0].substring(1);
             if (bidValue == '') {
                 alert("Fist compulsory bid!!!");
                 return;
             }
         }
-        //let date = {};
-        questionData.AnsNo = questionData.quNo;
-        questionData.Answer = 'P';
-        webSocket.send(JSON.stringify(questionData));
+        //alert($("#bidSign").val())
+        //alert($("#bidValue").val())
+        data.AnsNo = data.quNo;
+        data.Answer = 'P';
+        webSocket.send(JSON.stringify(data));
         $("#bidSection").hide();
-        resetSpinner();
-
     }
     function sendBid() {
         var bidSign = $("#bidSign").val();
         var bidValue = $("#bidValue").val();
 
-        if (!validateBid(bidSign, bidValue)) {
-            return;
-        }
-        //let data = {};
-        questionData.AnsNo = questionData.quNo;
-        questionData.Answer = bidSign + bidValue;
-        webSocket.send(JSON.stringify(questionData));
+        //alert($("#bidSign").val())
+        //alert($("#bidValue").val())
+        data.AnsNo = data.quNo;
+        data.Answer = bidSign + bidValue;
+        webSocket.send(JSON.stringify(data));
         $("#bidSection").hide();
-        resetSpinner();
     }
     function validateBid(bidSign, bidValue) {
-        if (globalData.VSF.length > 0) {
-            let vsfLength = globalData.VSF.length;
+        if (data.VSF.length > 0) {
+            let vsfLength = data.VSF.length;
             let lastBidValue = '';
             while (lastBidValue == '' && vsfLength > 0) {
-                let lastBid = globalData.VSF[vsfLength - 1];
+                let lastBid = data.VSF[vsfLength - 1];
                 lastBidValue = Object.values(lastBid)[0].substring(1);
                 vsfLength--;
             }
@@ -219,35 +204,27 @@
         document.cookie = seatNo;
         webSocket = new WebSocket("ws://127.0.0.1:6789/key=" + seatNo + "&Room=0&seatNo=" + seatNo);
         webSocket.onmessage = function (message) {
+            //console.log("here ");
             console.log(message);
             if (message.data) {
                 $('div[id="foldSection"]').hide();
-                let data = JSON.parse(message.data);
+                data = JSON.parse(message.data);
+
+
                 if (data.event == 'question') {
                     resetPlayedCards();
-                    questionData = data;
                     questionEvent(data);
 
                 }
-                if (data.VSF) {
-                    globalData.VSF = data.VSF;
-                }
-                refreshHand(data);
-                //$("#toastMessage")[0].innerHTML = data.message;
-                //$("#myToast").toast('show');
 
-                 if (data.event == 'play') {
-                    playData = data;
-                    if (data.playsofar && data.playsofar.length == 0) {
-                        $('div[id="foldSection"]').show();
-                    }
-                    $("#playButton").attr("disabled", false);
+                if (data.event == 'play') {
 
+                           playEvent(data);
                 }
                 if (data.event == 'MatchIsDone') {
                     $("#team0")[0].innerHTML = data.base0;
                     $("#team1")[0].innerHTML = data.base1;
-                    $('#gameCount')[0].innerHTML = data.Mc;
+                    $('#gameCount')[0].innerHTML=data.Mc;
                     $("#playedCardS1").attr("src", "cards/RED_BACK.svg");
                     $("#playedCardS2").attr("src", "cards/RED_BACK.svg");
                     $("#playedCardS3").attr("src", "cards/RED_BACK.svg");
@@ -261,68 +238,65 @@
                     $('div[name="' + data.message + '"]').show();
                 }
                 if (data.event == 'TrumpIsSet') {
-                    $("#viliPlayerS1").html("");
-                    $("#viliPlayerS2").html("");
-                    $("#viliPlayerS3").html("");
-                    $("#viliPlayerS4").html("");
-                    $("#viliPlayerS5").html("");
-                    $("#viliPlayerS6").html("");
-                    $("#viliPlayerS0").html("");
+                            $("#viliPlayerS1").html("");
+                            $("#viliPlayerS2").html("");
+                            $("#viliPlayerS3").html("");
+                            $("#viliPlayerS4").html("");
+                            $("#viliPlayerS5").html("");
+                            $("#viliPlayerS6").html("");
+                            $("#viliPlayerS0").html("");
 
                 }
                 if (data.event == 'HeCalled') {
-                    //$('#viliPlayer' + data.seat).html(data.Villi);
-                    if (data.Villi != "P") {
-                        $("#trumpSection")[0].innerHTML = "Biding: " + convertToSign(data.Villi.substring(0, 1)) + data.Villi.substring(1);
+                            $('#viliPlayer' + data.seat).html(data.Villi);
+                            if (data.Villi !="P")
+                              {
+                                   $("#trumpSection")[0].innerHTML = "Biding: " + convertToSign(data.Villi.substring(0, 1)) + data.Villi.substring(1);
 
-                    }
+                              }
                 }
-            }
-            $("#playingTable").show();
+
+
+                               refreshHand(data);
+
+            } // end of event list
 
         }
-        var contents;
-        for (i = 28; i < 57; i++) {
-            if (i == 28) {
-                contents += "<option selected value=\"" + i + "\">" + i + "</option>";
 
-            } else {
-                contents += "<option value=\"" + i + "\">" + i + "</option>";
-            }
-        }
 
         $("#playingTable").show();
-        $("#bidValue")[0].innerHTML = contents;
+
     }
     $(document).ready(function () {
 
     });
 
-    function questionEvent(data) {
 
-        var higest = (data.loopStart);
-        var contents;
-        for (i = higest; i < 57; i++) {
-            if (i == 28) {
-                contents += "<option selected value=\"" + i + "\">" + i + "</option>";
+    function questionEvent(data){
 
-            } else {
-                contents += "<option value=\"" + i + "\">" + i + "</option>";
-            }
-        }
-        $("#bidValue")[0].innerHTML = contents;
-        $("#bidSection").show();
-        //$("#playSection").hide();
-        $("#playButton").attr("disabled", true);
+      var higest=(data.loopStart);
+      var contents;
+      for (i = higest; i < 57; i++) {
+          if (i == 28) {
+              contents += "<option selected value=\"" + i + "\">" + i + "</option>";
+
+          } else {
+              contents += "<option value=\"" + i + "\">" + i + "</option>";
+          }
+      }
+      $("#bidValue")[0].innerHTML = contents;
+      $("#bidSection").show();
+      //$("#playSection").hide();
+      $("#playButton").attr("disabled", true);
 
     }
 
-    function playEvent() {
+    function playEvent(){
 
-        if (data.playsofar && data.playsofar.length == 0) {
-            $('div[id="foldSection"]').show();
-        }
-        $("#playButton").attr("disabled", false);
+      if (data.playsofar && data.playsofar.length == 0) {
+          $('div[id="foldSection"]').show();
+      }
+      $("#playButton").attr("disabled", false);
 
     }
     function selectCard(card) {
@@ -336,18 +310,18 @@
         if (!validPlay) {
             return;
         }
-        playData.card = selectedCard;
+        data.card = selectedCard;
         //alert(data.card);
-        webSocket.send(JSON.stringify(playData));
+        webSocket.send(JSON.stringify(data));
 
         $(".selectedCard").remove();
         //$("#playSection").hide();
         $("#playButton").attr("disabled", true);
     }
     function validatePlay(card) {
-        if (globalData.playsofar) {
-            if (globalData.playsofar.length > 0) {
-                var firstCard = Object.values(globalData.playsofar[0])[0];
+        if (data.playsofar) {
+            if (data.playsofar.length > 0) {
+                var firstCard = Object.values(data.playsofar[0])[0];
                 if (card.substring(0, 1) != firstCard.substring(0, 1)) {
                     if (ifSignPresent(firstCard)) {
                         alert("Invalid play!!")
@@ -367,8 +341,10 @@
     }
     function resetPlayedCards() {
         for (i = 0; i < 6; i++) {
+            //seatIndex--;
             $("#playedCardS" + i).attr("src", "cards/RED_BACK.svg");
         }
+        //$("#playedActiveCard").attr("src", "cards/RED_BACK.svg");
     }
 
     function showOtherCards(otherCards) {
@@ -380,11 +356,11 @@
                 .attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
         }
 
-        //spinner---logic
+        //spinner
         for (var i = 0; i < 6; i++) {
             $('div[name="S' + i + '"]').hide();
         }
-        if (otherCards.length > 0 && otherCards.length != 6) {
+        if (otherCards.length > 0 && otherCards.length !=6) {
             var lastPlayed = Object.keys(otherCards[otherCards.length - 1])[0];
             var nextPlay = "S" + (parseInt(lastPlayed.substring(1), 10) + 1) % 6;
             $('div[name="' + nextPlay + '"]').show();
@@ -657,7 +633,7 @@
 
 
                     </div>
-                    <div class="col-sm-10 col-lg-10">
+                    <div class="col-sm-9 col-lg-9">
                         <div class="row">
                             <div class="col-3">
                             </div>
@@ -677,10 +653,10 @@
                             <div class="btn-group" id="bidSection" style="display: none;">
                                 <!-- <div id="bidSection"> -->
                                 <select class="browser-default custom-select selectpicker" id="bidSign">
-                                    <option value="S" style="font-size: 1.5rem;" selected>♠</option>
-                                    <option value="C" style="font-size: 1.5rem;">♣</option>
-                                    <option value="D" style="font-size: 1.5rem;">♦</option>
-                                    <option value="H" style="font-size: 1.5rem;">♥</option>
+                                    <option value="S" selected> ♠ Spade</option>
+                                    <option value="C">♣ Club</option>
+                                    <option value="D">♦ Diamond</option>
+                                    <option value="H">♥ Heart</option>
 
                                 </select>
 
@@ -724,19 +700,6 @@
             </div>
 
             <div class="col-sm-12 col-lg-3">
-                <!-- <div class="toast" data-autohide="false" role="alert" aria-live="assertive" aria-atomic="true"
-                    id="myToast">
-                    <div class="toast-header">
-                       <img src="..." class="rounded mr-2" alt="...">
-                <strong class="mr-auto">Info</strong>
-                <small></small>
-                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="toast-body" id="toastMessage">
-            </div>
-        </div> -->
             </div>
 
 
