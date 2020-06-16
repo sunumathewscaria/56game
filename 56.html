@@ -52,7 +52,7 @@
         if (data.playsofar && data.playsofar.length != 0) {
             showOtherCards(data.playsofar);
         }
-        if (data.VSF && globalData.playsofar && globalData.playsofar.length == 0 ) {
+        if (data.VSF && (!globalData.playsofar || globalData.playsofar.length == 0) ) {
             showVili(data.VSF);
         }
 
