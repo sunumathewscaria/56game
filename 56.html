@@ -223,6 +223,9 @@
             if (message.data) {
                 $('div[id="foldSection"]').hide();
                 let data = JSON.parse(message.data);
+                globalData.playsofar = data.playsofar;
+                globalData.VSF = data.VSF;
+                globalData.hand = data.hand;
                 if (data.event == 'question') {
                     resetPlayedCards();
                     questionData = data;
@@ -236,7 +239,10 @@
                 //$("#toastMessage")[0].innerHTML = data.message;
                 //$("#myToast").toast('show');
 
-                 if (data.event == 'play') {
+                if (data.event == 'play') {
+                    globalData.playsofar = data.playsofar;
+                    globalData.VSF = data.VSF;
+                    globalData.hand = data.hand;
                     playData = data;
                     if (data.playsofar && data.playsofar.length == 0) {
                         $('div[id="foldSection"]').show();
@@ -359,8 +365,8 @@
         return true;
     }
     function ifSignPresent(firstCard) {
-        for (var i = 0; i < data.hand.length; i++) {
-            if (data.hand[i].substring(0, 1) == firstCard.substring(0, 1)) {
+        for (var i = 0; i < globalData.hand.length; i++) {
+            if (globalData.hand[i].substring(0, 1) == firstCard.substring(0, 1)) {
                 return true;
             }
         }
