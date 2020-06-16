@@ -73,7 +73,7 @@
                     viliToShow = convertToSign(vili.substring(0, 1)) + vili.substring(1);
                 }
                 if (j == VSF.length - 1) {
-                    $("#trumpSection")[0].innerHTML = "Vili: " + viliToShow;
+                    //$("#trumpSection")[0].innerHTML = "Vili: " + viliToShow;
                     //spinner
                     resetSpinner();
                     let seatNumberIndex = parseInt(seatNo.substring(1));
@@ -273,7 +273,7 @@
                 if (data.event == 'HeCalled') {
                     //$('#viliPlayer' + data.seat).html(data.Villi);
                     if (data.Villi != "P") {
-                        $("#trumpSection")[0].innerHTML = "Biding: " + convertToSign(data.Villi.substring(0, 1)) + data.Villi.substring(1);
+                        //$("#trumpSection")[0].innerHTML = "Biding: " + convertToSign(data.Villi.substring(0, 1)) + data.Villi.substring(1);
 
                     }
                 }
