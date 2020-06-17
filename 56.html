@@ -220,7 +220,7 @@
         webSocket.onmessage = function (message) {
             console.log(message);
             if (message.data) {
-                $('div[id="foldSection"]').hide();
+                //$('div[id="foldSection"]').hide();
                 let data = JSON.parse(message.data);
                 globalData.playsofar = data.playsofar;
                 globalData.VSF = data.VSF;
@@ -244,7 +244,7 @@
                     globalData.hand = data.hand;
                     playData = data;
                     if (data.playsofar && data.playsofar.length == 0) {
-                        $('div[id="foldSection"]').show();
+                        //$('div[id="foldSection"]').show();
                     }
                     $("#playButton").attr("disabled", false);
 
@@ -253,6 +253,8 @@
                     $("#team0")[0].innerHTML = data.base0;
                     $("#team1")[0].innerHTML = data.base1;
                     $('#gameCount')[0].innerHTML = data.Mc;
+                    $('div[id="foldSection"]').show();
+
                     $("#playedCardS1").attr("src", "cards/RED_BACK.svg");
                     $("#playedCardS2").attr("src", "cards/RED_BACK.svg");
                     $("#playedCardS3").attr("src", "cards/RED_BACK.svg");
@@ -325,7 +327,7 @@
     function playEvent() {
 
         if (data.playsofar && data.playsofar.length == 0) {
-            $('div[id="foldSection"]').show();
+            // $('div[id="foldSection"]').show();
         }
         $("#playButton").attr("disabled", false);
 
@@ -560,9 +562,16 @@
 
                     </div>
                     <div class="col-sm-2">
-                        <div class="row" id="foldSection">
-                            <!-- <button type="button" class="btn btn-primary" onclick="fold()">Fold</button> -->
+                        <div class="row">
+                            <div class="col-sm-1"></div>
+                            <div class="col" id="foldSection">
+                                <button type="button" class="btn btn-primary" onclick="fold()">Fold</button>
+                           </div>
+                            <div class="col-sm-1"></div>
                         </div>
+                        <!-- <div class="row" id="foldSection">
+                             <button type="button" class="btn btn-primary" onclick="fold()">Fold</button>
+                        </div> -->
                     </div>
                     <div class="col-sm-3">
 
