@@ -74,10 +74,10 @@
                 }
                 if (j == VSF.length - 1) {
                     //spinner
-                    resetSpinner();
-                    let seatNumberIndex = parseInt(seatNo.substring(1));
+                    // resetSpinner();
+                    // let seatNumberIndex = parseInt(seatNo.substring(1));
 
-                    $('div[name="S' + getSeatNumber(seatNumberIndex, 1) + '"]').show();
+                    // $('div[name="S' + getSeatNumber(seatNumberIndex, 1) + '"]').show();
 
                 }
                 // viliToShow = convertToSign(vili.substring(0, 1)) + vili.substring(1);
@@ -385,15 +385,15 @@
                 .attr("src", "cards/" + otherCards[i][Object.keys(otherCards[i])[0]] + ".svg");
         }
 
-        //spinner---logic
-        for (var i = 1; i < 7; i++) {
-            $('div[name="S' + i + '"]').hide();
-        }
-        if (otherCards.length > 0 && otherCards.length != 6) {
-            var lastPlayed = Object.keys(otherCards[otherCards.length - 1])[0];
-            var nextPlay = "S" + (parseInt(lastPlayed.substring(1), 10) + 1) % 6;
-            $('div[name="' + nextPlay + '"]').show();
-        }
+        // //spinner---logic
+        // for (var i = 1; i < 7; i++) {
+        //     $('div[name="S' + i + '"]').hide();
+        // }
+        // if (otherCards.length > 0 && otherCards.length != 6) {
+        //     var lastPlayed = Object.keys(otherCards[otherCards.length - 1])[0];
+        //     var nextPlay = "S" + (parseInt(lastPlayed.substring(1), 10) + 1) % 6;
+        //     $('div[name="' + nextPlay + '"]').show();
+        // }
 
     }
     function fold() {
